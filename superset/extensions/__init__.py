@@ -19,9 +19,9 @@ import os
 from typing import Any, Callable, Optional
 
 import celery
-from cachelib.base import BaseCache
 from flask import Flask
 from flask_appbuilder import AppBuilder, SQLA
+from flask_caching.backends.base import BaseCache
 from flask_migrate import Migrate
 from flask_talisman import Talisman
 from flask_wtf.csrf import CSRFProtect
@@ -80,11 +80,13 @@ class UIManifestProcessor:
                 loaded_chunks.add(f)
             return filtered_files
 
-        return dict(
-            js_manifest=lambda bundle: get_files(bundle, "js"),
-            css_manifest=lambda bundle: get_files(bundle, "css"),
-            assets_prefix=self.app.config["STATIC_ASSETS_PREFIX"] if self.app else "",
-        )
+        return {
+            "js_manifest": lambda bundle: get_files(bundle, "js"),
+            "css_manifest": lambda bundle: get_files(bundle, "css"),
+            "assets_prefix": self.app.config["STATIC_ASSETS_PREFIX"]
+            if self.app
+            else "",
+        }
 
     def parse_manifest_json(self) -> None:
         try:
